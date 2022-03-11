@@ -1,0 +1,37 @@
+diff --git a/node_modules/@remix-run/dev/compiler.js b/node_modules/@remix-run/dev/compiler.js
+index 5722d7f..aa6f47e 100644
+--- a/node_modules/@remix-run/dev/compiler.js
++++ b/node_modules/@remix-run/dev/compiler.js
+@@ -34,6 +34,7 @@ var serverEntryModulePlugin = require('./compiler/plugins/serverEntryModulePlugi
+ var serverRouteModulesPlugin = require('./compiler/plugins/serverRouteModulesPlugin.js');
+ var fs = require('./compiler/utils/fs.js');
+ 
++
+ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+ 
+ function _interopNamespace(e) {
+@@ -329,7 +330,11 @@ async function createBrowserBuild(config, options) {
+       "process.env.NODE_ENV": JSON.stringify(options.mode),
+       "process.env.REMIX_DEV_SERVER_WS_PORT": JSON.stringify(config.devServerPort)
+     },
+-    plugins: [mdx.mdxPlugin(config), browserRouteModulesPlugin.browserRouteModulesPlugin(config, /\?browser$/), emptyModulesPlugin.emptyModulesPlugin(config, /\.server(\.[jt]sx?)?$/), nodeModulesPolyfill.NodeModulesPolyfillPlugin()]
++    plugins: [
++      require("esbuild-federation-share-scope").federationShareScopePlugin(process.cwd(), {
++        shared: ["react", "react-dom", "@remix-run/react"]
++      }),
++      mdx.mdxPlugin(config), browserRouteModulesPlugin.browserRouteModulesPlugin(config, /\?browser$/), emptyModulesPlugin.emptyModulesPlugin(config, /\.server(\.[jt]sx?)?$/), nodeModulesPolyfill.NodeModulesPolyfillPlugin()]
+   });
+ }
+ 
+@@ -348,7 +353,10 @@ async function createServerBuild(config, options, assetsManifestPromiseRef) {
+     };
+   }
+ 
+-  let plugins = [mdx.mdxPlugin(config), emptyModulesPlugin.emptyModulesPlugin(config, /\.client\.[tj]sx?$/), serverRouteModulesPlugin.serverRouteModulesPlugin(config), serverEntryModulePlugin.serverEntryModulePlugin(config), serverAssetsManifestPlugin.serverAssetsManifestPlugin(assetsManifestPromiseRef), serverBareModulesPlugin.serverBareModulesPlugin(config, dependencies$1)];
++  let plugins = [require("esbuild-federation-share-scope").federationShareScopePlugin(process.cwd(), {
++    shared: ["react", "react-dom", "@remix-run/react"]
++  }),
++  mdx.mdxPlugin(config), emptyModulesPlugin.emptyModulesPlugin(config, /\.client\.[tj]sx?$/), serverRouteModulesPlugin.serverRouteModulesPlugin(config), serverEntryModulePlugin.serverEntryModulePlugin(config), serverAssetsManifestPlugin.serverAssetsManifestPlugin(assetsManifestPromiseRef), serverBareModulesPlugin.serverBareModulesPlugin(config, dependencies$1)];
+ 
+   if (config.serverPlatform !== "node") {
+     plugins.push(nodeModulesPolyfill.NodeModulesPolyfillPlugin());
